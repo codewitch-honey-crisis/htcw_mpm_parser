@@ -67,6 +67,7 @@ int main() {
         size = sizeof(buffer)-1;
     }
     fclose(buf.file);
+    return 0;
 }
 ```
 
