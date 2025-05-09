@@ -323,6 +323,9 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                         break;
                 }
                 ++ctx->boundary_pos;
+                if(!size) {
+                    return MPM_CONTENT_PART;
+                }
                 break;
         }
     }
