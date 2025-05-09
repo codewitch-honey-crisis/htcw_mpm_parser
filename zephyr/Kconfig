@@ -1,0 +1,7 @@
+menu "htcw_mpm_parser configuration"
+  config HTCW_MPM_PARSER
+    bool "Enable HTCW_MPM_PARSER"
+    depends on C
+    select REQUIRES_FULL_LIBC
+    default n
+endmenu
