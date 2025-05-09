@@ -38,7 +38,7 @@ static int buffered_file_read(void* state) {
     return rfb->buffer[rfb->buffer_pos++];
 }
 int main() {
-    const char* boundary = "---------------------------90519141544843365972754266--";
+    const char* boundary = "---------------------------90519141544843365972754266";
     mpm_context_t ctx;
     read_file_buffer_t buf = {0};
     buf.file = fopen("..\\..\\mpart.txt","rb");
