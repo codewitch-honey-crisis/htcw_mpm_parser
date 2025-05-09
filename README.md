@@ -46,7 +46,6 @@ int main() {
     char buffer[1025];
     size_t size = sizeof(buffer)-1;
     mpm_node_t node;
-    char disposition = 0;
     while((node=mpm_parse(&ctx,buffer,&size))>0) {
         switch(node) {
             case MPM_HEADER_NAME_PART:
