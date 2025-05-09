@@ -21,7 +21,6 @@
             "base": "examples/demo",
             "files": [
                 "platformio.ini",
-                "data/mpart.txt",
                 "src/main.cpp"
             ]
         }

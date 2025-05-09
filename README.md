@@ -2,6 +2,16 @@
 
 A pull parser for reading multipart MIME data
 
+Requires very little memory. 
+
+- Aside from a few fields in the context structure, it only uses whatever memory you give it.
+
+- Streaming, so it doesn't have to preload anything.
+
+- Pull parsing, so no complicated callbacks to implement
+
+- Flexibly loads from any source.
+
 example:
 ```c
 #include <ctype.h>
