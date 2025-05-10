@@ -322,11 +322,11 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                         }
                         break;
                 }
+                ++ctx->boundary_pos;
                 if(!size) {
                     ctx->skip_next_read = 1;
                     return MPM_CONTENT_PART;
                 }
-                ++ctx->boundary_pos;
                 break;
         }
     }
