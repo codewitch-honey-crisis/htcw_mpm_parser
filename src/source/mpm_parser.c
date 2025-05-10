@@ -223,6 +223,9 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                         ctx->skip_next_read = 1;
                         ctx->state = (int)MPM_S_CONTENT_THEN_HEADER;
                         return MPM_CONTENT_PART;
+                    } else {
+                        ctx->skip_next_read = 1;
+                        return MPM_CONTENT_END;
                     }
                     break;
                 } 
@@ -285,7 +288,8 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                     ctx->state = (int)MPM_S_CONTENT_THEN_END;
                     return MPM_CONTENT_PART;
                 }
-                goto done;
+                ctx->state = MPM_S_END;
+                return MPM_CONTENT_END;
             case (int)MPM_S_COPY_BOUNDARY_PART:
                 if(ctx->boundary_pos>=ctx->boundary_repl) {
                     ctx->state = MPM_S_CONTENT;
@@ -335,6 +339,5 @@ error:
     return MPM_ERROR;
 done:
     ctx->state = (int)MPM_S_END;    
-    return MPM_END;
-    
+    return MPM_END;   
 }
