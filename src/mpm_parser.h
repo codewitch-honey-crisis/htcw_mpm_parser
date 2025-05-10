@@ -55,7 +55,7 @@ extern "C" {
 /// @param read_state The state to pass to the on_read callback
 /// @param out_context The resulting context
 void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback on_read, void* read_state,mpm_context_t* out_context);
-/// @brief Initializes the multipart MIME parser from a FILE pointer
+/// @brief Initializes the multipart MIME parser from a file
 /// @param boundary The MIME content boundary
 /// @param boundary_size The length of the MIME content boundary
 /// @param path The file path
