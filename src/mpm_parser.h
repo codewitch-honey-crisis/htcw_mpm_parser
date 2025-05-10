@@ -1,3 +1,11 @@
+/*
+mpm_parser https://github.com/codewitch-honey-crisis/htcw_mpm_parser
+
+A streaming multipart MIME peephole parser for C
+Copyright (C) 2025 by honey the codewitch
+MIT License
+ */
+
 #ifndef HTCW_MPM_PARSER_H
 #define HTCW_MPM_PARSER_H
 #include <stddef.h>
