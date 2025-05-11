@@ -18,6 +18,8 @@ This is quite possibly the most frugal open source multipart MIME parser on the 
 
 - Open source, free to use, permissive MIT license
 
+Note: The demos are all text, but this has been tested with binary data.
+
 ### Example:
 ```c
 #include <ctype.h>
