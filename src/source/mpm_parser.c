@@ -1,4 +1,6 @@
+#ifndef HTCW_MPM_NO_STDIO
 #include <stdio.h>
+#endif
 #include <string.h>
 #include "mpm_parser.h"
 typedef enum {
@@ -32,6 +34,7 @@ void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback o
     
     mpm_init_impl   (boundary,boundary_size ,on_read,read_state,out_context);
 }
+#ifndef HTCW_MPM_NO_STDIO
 static int mpm_file_callback(void* state) {
     if(state==NULL) return -1;
     FILE* f = (FILE*)state;
@@ -45,6 +48,7 @@ int mpm_init_file(const char* boundary, size_t boundary_size, const char* path,m
     mpm_init_impl(boundary,boundary_size, mpm_file_callback, f,out_context);
     return 0;
 }
+#endif // HTCW_MPM_NO_STDIO
 mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
     if(ctx->state==(int)MPM_S_END) {
         ctx->state = (int)MPM_S_END;

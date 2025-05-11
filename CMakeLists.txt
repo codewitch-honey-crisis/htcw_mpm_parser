@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.24)
-project(htcw_mpm_parser VERSION 0.1)
+project(htcw_mpm_parser VERSION 0.2)
 set(CMAKE_STATIC_LIBRARY_PREFIX "")
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
 

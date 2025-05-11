@@ -1,14 +1,10 @@
-/*
-mpm_parser https://github.com/codewitch-honey-crisis/htcw_mpm_parser
-
-A streaming multipart MIME peephole parser for C
-Copyright (C) 2025 by honey the codewitch
-MIT License
- */
-
 #ifndef HTCW_MPM_PARSER_H
 #define HTCW_MPM_PARSER_H
 #include <stddef.h>
+
+/* CONFIGURATION
+    #define HTCW_MPM_NO_STDIO to disable the file support and remove the stdio dependency
+*/
 
 /// @brief The type of parsing element returned
 typedef enum {
@@ -55,12 +51,14 @@ extern "C" {
 /// @param read_state The state to pass to the on_read callback
 /// @param out_context The resulting context
 void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback on_read, void* read_state,mpm_context_t* out_context);
-/// @brief Initializes the multipart MIME parser from a file
+#ifndef HTCW_MPM_NO_STDIO
+/// @brief Initializes the multipart MIME parser from a FILE pointer
 /// @param boundary The MIME content boundary
 /// @param boundary_size The length of the MIME content boundary
 /// @param path The file path
 /// @param out_context The resulting context
 /// @return 0 if sucessful, otherwise -1 if invalid argument or path not found
+#endif // HTCW_MPM_NO_STDIO
 int mpm_init_file(const char* boundary, size_t boundary_size, const char* path, mpm_context_t* out_context);
 /// @brief Parses the next portion of the multipart MIME content
 /// @param ctx The previously initialized context
