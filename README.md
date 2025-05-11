@@ -2,19 +2,23 @@
 
 A pull parser for reading multipart MIME data
 
-Requires very little memory.
+This is quite possibly the most frugal open source multipart MIME parser on the Internet, in terms of memory usage.
 
-- Aside from a few fields in the context structure, it only uses whatever memory you give it
+- It requires a minumum total of 37 bytes of space for both the context, and the necessary output buffer of (at least) 1 char. 
 
-- Streaming, so it doesn't have to preload anything
+- As far as the output buffer, it uses any size you give it
 
-- Pull parsing, so no complicated callbacks to implement
+- The parser is streaming, so it doesn't have to preload anything. It parses entirely as it goes, a chunk at a time, as determined by the size of the output buffer.
 
-- Flexibly loads from any source
+- Pull parsing, so no complicated callbacks to implement. It works like Microsoft .NET's XmlReader class that way. You use a while loop to call the parse method repeatedly and act on each result.
+
+- It flexibly loads from any source. You implement a simple callback (much like `fgetc()`) to read content. Unbuffered file reads are already supported, and the example code below includes a buffered file read. You can also create a callback for strings, network sockets, or any other transport you need.
 
 - Straight C, cross platform, and no dependencies other than the C runtimes
 
-example:
+- Open source, free to use, permissive MIT license
+
+### Example:
 ```c
 #include <ctype.h>
 #include <stdio.h>
@@ -40,40 +44,76 @@ static int buffered_file_read(void* state) {
     return rfb->buffer[rfb->buffer_pos++];
 }
 int main() {
+    // fetched from the Content-Type HTTP header:
     const char* boundary = "---------------------------90519141544843365972754266";
     mpm_context_t ctx;
     read_file_buffer_t buf = {0};
-    buf.file = fopen("..\\..\\mpart.txt","rb");
-    mpm_init(boundary,0,buffered_file_read,&buf ,&ctx);
+    // we froze the HTTP request body in mpart.txt
+    buf.file = fopen("..\\..\\mpart.txt", "rb");
+    mpm_init(boundary, 0, buffered_file_read, &buf ,&ctx);
     char buffer[1025];
-    size_t size = sizeof(buffer)-1;
+    size_t size = sizeof(buffer) - 1;
     mpm_node_t node;
-    while((node=mpm_parse(&ctx,buffer,&size))>0) {
+    while((node = mpm_parse(&ctx, buffer, &size)) > 0) {
         switch(node) {
             case MPM_HEADER_NAME_PART:
             case MPM_HEADER_VALUE_PART:
             case MPM_CONTENT_PART:
-                buffer[size]='\0';
-                fputs(buffer,stdout);
+                buffer[size] = '\0';
+                fputs(buffer, stdout);
                 break;
             case MPM_HEADER_NAME_END:
-                fputs(": ",stdout);
+                fputs(": ", stdout);
                 break;
             case MPM_HEADER_VALUE_END:
-                fputs(" (HEADER)\r\n",stdout);
+                fputs(" (HEADER)\r\n", stdout);
                 break;
             case MPM_CONTENT_END:
-                fputs("<END CONTENT>\r\n",stdout);
+                fputs("<END CONTENT>\r\n", stdout);
                 break;
         }
-        size = sizeof(buffer)-1;
+        size = sizeof(buffer) - 1;
     }
     fclose(buf.file);
     return 0;
 }
 ```
+#### mpart.txt contents:
+```
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="text"
 
-platformio.ini:
+text default
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="file1"; filename="a.txt"
+Content-Type: text/plain
+
+Data of a.txt.
+
+-----------------------------9051914041544843365972754266
+Content-Disposition: form-data; name="file2"; filename="a.html"
+Content-Type: text/html
+
+<!DOCTYPE html><title>Data of a.html.</title>
+
+-----------------------------9051914041544843365972754266--
+```
+#### Example output:
+```
+Content-Disposition: form-data; name="text" (HEADER)
+text default<END CONTENT>
+Content-Disposition: form-data; name="file1"; filename="a.txt" (HEADER)
+Content-Type: text/plain (HEADER)
+Data of a.txt.<END CONTENT>
+Content-Disposition: form-data; name="file2"; filename="a.html" (HEADER)
+Content-Type: text/html (HEADER)
+<!DOCTYPE html><title>Data of a.html.</title><END CONTENT>
+````
+
+
+- Arduino repo: htcw_mpm_parser
+
+- PlatformIO platformio.ini:
 ```
 [env:node32s]
 platform = espressif32

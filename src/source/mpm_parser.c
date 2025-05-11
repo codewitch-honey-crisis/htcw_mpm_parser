@@ -228,7 +228,7 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                         return MPM_CONTENT_END;
                     }
                     break;
-                } 
+                }
                 switch(ctx->boundary_pos) {
                     case -4:
                         if(ctx->i!='\r') {
