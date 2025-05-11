@@ -4,7 +4,7 @@ A pull parser for reading multipart MIME data
 
 This is quite possibly the most frugal open source multipart MIME parser on the Internet, in terms of memory usage.
 
-- It requires a minumum total of 37 bytes of space for both the context, and the necessary output buffer of (at least) 1 char. 
+- It requires a minumum total of 37 bytes of space for both the context, and the necessary output buffer of (at least) 1 char, on typical 32-bit systems.
 
 - As far as the output buffer, it uses any size you give it
 
