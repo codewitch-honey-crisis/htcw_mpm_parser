@@ -1,6 +1,4 @@
-#ifndef HTCW_MPM_NO_STDIO
 #include <stdio.h>
-#endif
 #include <string.h>
 #include "mpm_parser.h"
 typedef enum {
@@ -34,7 +32,6 @@ void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback o
     
     mpm_init_impl   (boundary,boundary_size ,on_read,read_state,out_context);
 }
-#ifndef HTCW_MPM_NO_STDIO
 static int mpm_file_callback(void* state) {
     if(state==NULL) return -1;
     FILE* f = (FILE*)state;
@@ -48,8 +45,8 @@ int mpm_init_file(const char* boundary, size_t boundary_size, const char* path,m
     mpm_init_impl(boundary,boundary_size, mpm_file_callback, f,out_context);
     return 0;
 }
-#endif // HTCW_MPM_NO_STDIO
 mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
+    static const char boundary_start_table[] = {'\r','\n','-','-'};
     if(ctx->state==(int)MPM_S_END) {
         ctx->state = (int)MPM_S_END;
         return MPM_END;
@@ -169,6 +166,10 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                         ((char*)buffer)[(*in_out_size)++]='\r';
                         --size;
                         ctx->state = (int)MPM_S_HEADER;
+                        if(!size) {
+                            ctx->state = (int)MPM_S_HEADER_NAME;
+                            return MPM_HEADER_NAME_PART;
+                        }
                         break;
                     }
                     ctx->state = (int)MPM_S_CONTENT;
@@ -233,36 +234,14 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                     }
                     break;
                 }
-                switch(ctx->boundary_pos) {
-                    case -4:
-                        if(ctx->i!='\r') {
-                            ctx->boundary_pos = -4;
-                            ctx->boundary_repl =-4;
-                            ctx->state = (int)MPM_S_COPY_BOUNDARY_PART;
-                        }
-                        break;
-                    case -3:
-                        if(ctx->i!='\n') {
-                            ctx->boundary_pos = -4;
-                            ctx->boundary_repl =-3;
-                            ctx->state = (int)MPM_S_COPY_BOUNDARY_PART;
-                        }
-                        break;
-                    case -2:
-                        if(ctx->i!='-') {
-                            ctx->boundary_pos = -4;
-                            ctx->boundary_repl =-2;
-                            ctx->state = (int)MPM_S_COPY_BOUNDARY_PART;
-                        }
-                        break;
-                    case -1:
-                        if(ctx->i!='-') {
-                            ctx->boundary_pos = -4;
-                            ctx->boundary_repl =-1;
-                            ctx->state = (int)MPM_S_COPY_BOUNDARY_PART;
-                        }
-                        break;
+                if(ctx->boundary_pos<0) {
+                    if(ctx->i!=boundary_start_table[ctx->boundary_pos+4]) {
+                        ctx->boundary_repl = ctx->boundary_pos;
+                        ctx->boundary_pos = -4;
+                        ctx->state = (int)MPM_S_COPY_BOUNDARY_PART;
+                    }
                 }
+                
                 if(ctx->state==(int)MPM_S_COPY_BOUNDARY_PART) {
                     break;
                 }
@@ -299,36 +278,26 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                     ctx->state = MPM_S_CONTENT;
                     break;
                 }
-                switch(ctx->boundary_pos) {
-                    case -4:
-                        ((char*)buffer)[(*in_out_size)++]='\r'; --size;
-                        break;
-                    case -3:
-                        ((char*)buffer)[(*in_out_size)++]='\n'; --size;
-                        break;
-                    case -2:
-                    case -1:
-                        ((char*)buffer)[(*in_out_size)++]='-'; --size;
-                        break;
-                    default:
-                        if(ctx->boundary_pos<ctx->boundary_size) {
-                            ((char*)buffer)[(*in_out_size)++]=ctx->boundary[ctx->boundary_pos]; --size;
-                        } else if(ctx->boundary_pos==ctx->boundary_size+1) {
-                            if(ctx->i=='-') {
-                                ((char*)buffer)[(*in_out_size)++]='-'; 
-                            } else {
-                                ((char*)buffer)[(*in_out_size)++]='\r'; 
-                            }
-                            --size;
-                        } else if(ctx->boundary_pos==ctx->boundary_size+1) {
-                            if(ctx->i=='-') {
-                                ((char*)buffer)[(*in_out_size)++]='-'; 
-                            } else {
-                                ((char*)buffer)[(*in_out_size)++]='\n'; 
-                            }
-                            --size;
+                if(ctx->boundary_pos<0) {
+                    ((char*)buffer)[(*in_out_size)++]=boundary_start_table[ctx->boundary_pos+4]; --size;
+                } else {
+                    if(ctx->boundary_pos<ctx->boundary_size) {
+                        ((char*)buffer)[(*in_out_size)++]=ctx->boundary[ctx->boundary_pos]; --size;
+                    } else if(ctx->boundary_pos==ctx->boundary_size+1) {
+                        if(ctx->i=='-') {
+                            ((char*)buffer)[(*in_out_size)++]='-'; 
+                        } else {
+                            ((char*)buffer)[(*in_out_size)++]='\r'; 
                         }
-                        break;
+                        --size;
+                    } else if(ctx->boundary_pos==ctx->boundary_size+2) {
+                        if(ctx->i=='-') {
+                            ((char*)buffer)[(*in_out_size)++]='-'; 
+                        } else {
+                            ((char*)buffer)[(*in_out_size)++]='\n'; 
+                        }
+                        --size;
+                    }
                 }
                 ++ctx->boundary_pos;
                 if(!size) {
@@ -341,7 +310,4 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
 error:
     ctx->state = (int)MPM_S_ERROR;
     return MPM_ERROR;
-done:
-    ctx->state = (int)MPM_S_END;    
-    return MPM_END;   
 }
