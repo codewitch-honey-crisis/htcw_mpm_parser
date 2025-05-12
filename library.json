@@ -1,6 +1,6 @@
 {
     "name": "htcw_mpm_parser",
-    "version": "0.2.2",
+    "version": "0.3.0",
     "description": "Provides methods for parsing multipart MIME content",
     "keywords": ["io","http","html","mime"],
     "authors": {

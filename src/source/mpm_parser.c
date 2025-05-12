@@ -18,7 +18,9 @@ typedef enum {
     MPM_S_HEADER_NAME,
     MPM_S_HEADER_SEP,
     MPM_S_HEADER_VALUE,
-    MPM_S_HEADER_VALUE_END
+    MPM_S_HEADER_VALUE_2,
+    MPM_S_HEADER_VALUE_END,
+    MPM_S_HEADER_VALUE_END_THEN_HEADER_END
 } mpm_state_t;
 static void mpm_init_impl(const char* boundary, size_t boundary_size, mpm_on_read_callback on_read, void* read_state, mpm_context_t* out_context) {
     out_context->state = (int)MPM_S_INIT;
@@ -145,8 +147,17 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                     if(ctx->i!='\n') {
                         goto error;
                     }
-                    ctx->state = (int)MPM_S_HEADER_VALUE_END;
+                    ctx->state = (int)MPM_S_HEADER_VALUE_END_THEN_HEADER_END;
                     return MPM_HEADER_VALUE_END;
+                }
+                if(ctx->i==';') {
+                    ctx->i = ctx->on_read(ctx->read_state);
+                    while(ctx->i==' ') {
+                        ctx->i = ctx->on_read(ctx->read_state);
+                    }
+                    ctx->skip_next_read = 1;
+                    ctx->state = (int)MPM_S_HEADER_VALUE_2;
+                    return MPM_HEADER_VALUE_PART;
                 }
                 ((char*)buffer)[(*in_out_size)++]=ctx->i;
                 --size;
@@ -159,6 +170,27 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                     return MPM_HEADER_VALUE_PART;
                 }
                 break;
+            case (int)MPM_S_HEADER_VALUE_2:
+                if(ctx->i=='\r') {
+                    ctx->i = ctx->on_read(ctx->read_state);
+                    if(ctx->i!='\n') {
+                        goto error;
+                    }
+                    ctx->state = (int)MPM_S_HEADER_VALUE_END_THEN_HEADER_END;
+                    return MPM_HEADER_VALUE_END;
+                }
+                if(ctx->i==';') {
+                    ctx->i = ctx->on_read(ctx->read_state);
+                    while(ctx->i==' ') {
+                        ctx->i = ctx->on_read(ctx->read_state);
+                    }
+                    ctx->skip_next_read = 1;
+                    ctx->state = (int)MPM_S_HEADER_VALUE_2;
+                    return MPM_HEADER_VALUE_END;
+                }
+                ctx->state = MPM_S_HEADER_VALUE;
+                ctx->skip_next_read = 1;
+                return MPM_HEADER_VALUE_END;
             case (int)MPM_S_HEADER_VALUE_END:
                 if(ctx->i=='\r') {
                     ctx->i = ctx->on_read(ctx->read_state);
@@ -178,6 +210,10 @@ mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size) {
                 }
                 ctx->state = (int)MPM_S_HEADER;
                 break;
+            case (int)MPM_S_HEADER_VALUE_END_THEN_HEADER_END:
+                ctx->state = MPM_S_HEADER;
+                ctx->skip_next_read = 1;
+                return MPM_HEADER_END;
             case (int)MPM_S_CONTENT:
                 if(ctx->i == '\r') {
                     ctx->boundary_pos = -4;

@@ -56,18 +56,22 @@ int main() {
     char buffer[1025];
     size_t size = sizeof(buffer) - 1;
     mpm_node_t node;
-    while((node = mpm_parse(&ctx, buffer, &size)) > 0) {
-        switch(node) {
+    do {
+        node = mpm_parse(&ctx, buffer, &size);
+        buffer[size] = '\0';
+        switch (node) {
             case MPM_HEADER_NAME_PART:
             case MPM_HEADER_VALUE_PART:
             case MPM_CONTENT_PART:
-                buffer[size] = '\0';
                 fputs(buffer, stdout);
                 break;
             case MPM_HEADER_NAME_END:
-                fputs(": ", stdout);
+                fputs(": ", stdout);                
                 break;
             case MPM_HEADER_VALUE_END:
+                fputs("; ", stdout);
+                break;
+            case MPM_HEADER_END:
                 fputs(" (HEADER)\r\n", stdout);
                 break;
             case MPM_CONTENT_END:
@@ -75,7 +79,7 @@ int main() {
                 break;
         }
         size = sizeof(buffer) - 1;
-    }
+    } while (node > 0);
     fclose(buf.file);
     return 0;
 }
