@@ -106,14 +106,14 @@ Content-Type: text/html
 ```
 #### Example output:
 ```
-Content-Disposition: form-data; name="text" (HEADER)
+Content-Disposition: form-data; name="text";  (HEADER)
 text default<END CONTENT>
-Content-Disposition: form-data; name="file1"; filename="a.txt" (HEADER)
-Content-Type: text/plain (HEADER)
+Content-Disposition: form-data; name="file1"; filename="a.txt";  (HEADER)
+Content-Type: text/plain;  (HEADER)
 Data of a.txt.
 <END CONTENT>
-Content-Disposition: form-data; name="file2"; filename="a.html" (HEADER)
-Content-Type: text/html (HEADER)
+Content-Disposition: form-data; name="file2"; filename="a.html";  (HEADER)
+Content-Type: text/html;  (HEADER)
 <!DOCTYPE html><title>Data of a.html.</title>
 <END CONTENT>
 ````
