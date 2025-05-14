@@ -3,7 +3,8 @@
 #include <stddef.h>
 
 /* CONFIGURATION
-    #define HTCW_MPM_NO_STDIO to disable the file support and remove the stdio dependency
+    #define HTCW_MPM_NO_STDIO to disable the file support and remove the stdio
+   dependency
 */
 
 /// @brief The type of parsing element returned
@@ -25,11 +26,12 @@ typedef enum {
     /// @brief A part of the content
     MPM_CONTENT_PART,
     /// @brief The end of the content
-    MPM_CONTENT_END    
+    MPM_CONTENT_END
 } mpm_node_t;
 
-/// @brief The callback used to read a value from the input (similar to fgetc() but the arg is user defined)
-typedef int(*mpm_on_read_callback)(void* state);
+/// @brief The callback used to read a value from the input (similar to fgetc()
+/// but the arg is user defined)
+typedef int (*mpm_on_read_callback)(void* state);
 /// @brief The context struct for parsing. The fields are for internal use
 typedef struct {
     int state;
@@ -52,7 +54,9 @@ extern "C" {
 /// @param on_read The callback to read the next character
 /// @param read_state The state to pass to the on_read callback
 /// @param out_context The resulting context
-void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback on_read, void* read_state,mpm_context_t* out_context);
+void mpm_init(const char* boundary, size_t boundary_size,
+              mpm_on_read_callback on_read, void* read_state,
+              mpm_context_t* out_context);
 #ifndef HTCW_MPM_NO_STDIO
 /// @brief Initializes the multipart MIME parser from a FILE pointer
 /// @param boundary The MIME content boundary
@@ -60,19 +64,21 @@ void mpm_init(const char* boundary, size_t boundary_size, mpm_on_read_callback o
 /// @param path The file path
 /// @param out_context The resulting context
 /// @return 0 if sucessful, otherwise -1 if invalid argument or path not found
-#endif // HTCW_MPM_NO_STDIO
-int mpm_init_file(const char* boundary, size_t boundary_size, const char* path, mpm_context_t* out_context);
+#endif  // HTCW_MPM_NO_STDIO
+int mpm_init_file(const char* boundary, size_t boundary_size, const char* path,
+                  mpm_context_t* out_context);
 /// @brief Parses the next portion of the multipart MIME content
 /// @param ctx The previously initialized context
 /// @param buffer A buffer to hold the result
-/// @param in_out_size (on input) the size of the buffer - (on output) the amount of bytes filled. Will be less than or equal to the size passed in
+/// @param in_out_size (on input) the size of the buffer - (on output) the
+/// amount of bytes filled. Will be less than or equal to the size passed in
 /// @return The node value of the parsed element
 mpm_node_t mpm_parse(mpm_context_t* ctx, void* buffer, size_t* in_out_size);
 #ifdef __cplusplus
 }
 #endif
 
-#if 0 // DEMO
+#if 0  // DEMO
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -146,5 +152,5 @@ int main() {
     } while (node > 0);
     return 0;
 }
-#endif // #if 0
-#endif // HTCW_MPM_PARSER_H
+#endif  // #if 0
+#endif  // HTCW_MPM_PARSER_H
